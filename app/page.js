@@ -1,95 +1,61 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import * as React from 'react'
+import { useState } from "react";
+import { FormControl, InputLabel, MenuItem, Select, Grid, TextField, Button } from '@mui/material'
 
 export default function Home() {
+  const [inputText, setInputText] = useState("");
+  const [outputText, setOutputText] = useState("");
+
+  const [outputLang, setOutputLang] = React.useState('en')
+  const outputLangChange = (event) => {
+    setOutputLang(event.target.value);
+  }
+
+  // Replace 'YOUR_PROJECT_ID' with your project ID, referencing .env file
+  const projectId = 'YOUR_PROJECT_ID';
+
+  // Imports the Google Cloud client library
+  const {Translate} = require('@google-cloud/translate').v2;
+
+  // Creates a client
+  const translate = new Translate();
+
+  async function translateText() {
+    // Translates the text into the target language.
+    let [translations] = await translate.translate(inputText, outputLang);
+    translations = Array.isArray(translations) ? translations : [translations];
+    console.log('Translations:');
+    translations.forEach((translation, i) => {
+      console.log(`${text[i]} => (${outputLang}) ${translation}`);
+    });
+    // Set the translated text to outputText
+    setOutputText(translations.join('\n'));
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ padding: 2 }}>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <InputLabel id="outputLang-label">Output Language</InputLabel>
+          <Select
+            labelId="outputLang-label"
+            id="outputLang"
+            value={outputLang}
+            label="Output Language"
+            onChange={outputLangChange}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+            <MenuItem value={"en"}>English</MenuItem>
+            <MenuItem value={"es"}>Spanish</MenuItem>
+            <MenuItem value={"zh"}>Chinese</MenuItem>
+            <MenuItem value={"ru"}>Russian</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid item xs={6}><TextField id="input-field" label="Enter Text To Translate" variant="outlined" fullWidth multiline rows={15} value={inputText} onChange={(e) => setInputText(e.target.value)}/></Grid>
+      <Grid item xs={6}><TextField id="output-field" label="Translated Text Output" variant="outlined" fullWidth multiline rows={15} value={outputText}/></Grid>
+      <Grid item xs={12} container justifyContent="center"><Button variant="contained" onClick={translateText}>Translate</Button></Grid>
+    </Grid>
   );
 }
