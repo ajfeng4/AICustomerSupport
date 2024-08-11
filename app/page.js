@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Stack, TextField } from "@mui/material";
+import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
@@ -13,6 +13,9 @@ export default function Home() {
   ]);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [review, setReview] = useState("");
+  const [rating, setRating] = useState(0); // New state for rating
 
   const sendMessage = async () => {
     if (!message.trim()) return; // Don't send empty messages
@@ -55,23 +58,15 @@ export default function Home() {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching API:", error);
       setMessages((messages) => [
         ...messages,
-        {
-          role: "assistant",
-          content:
-            "I'm sorry, but I encountered an error. Please try again later.",
-        },
+        { role: "assistant", content: "I'm sorry, but I encountered an error. Please try again later." },
       ]);
     }
+
     setIsLoading(false);
-    const handleKeyPress = (event) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-      }
-    };
+    setReviewDialogOpen(true); // Open the review popup after session ends
   };
 
   const handleKeyPress = (event) => {
@@ -90,6 +85,19 @@ export default function Home() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleReviewClose = () => {
+    setReviewDialogOpen(false);
+  };
+
+  const handleReviewSubmit = () => {
+    console.log("Review submitted:", review);
+    console.log("Rating submitted:", rating);
+    // You can send this review and rating to your backend API here
+    setReviewDialogOpen(false);
+    setReview(""); // Clear the review input
+    setRating(0);  // Reset the rating
+  };
 
   return (
     <Box
@@ -157,6 +165,38 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
+
+      <Dialog open={reviewDialogOpen} onClose={handleReviewClose}>
+        <DialogTitle>Review Your Experience</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please let us know how your experience was with our support assistant.
+          </DialogContentText>
+          <Rating
+            name="rating"
+            value={rating}
+            onChange={(event, newValue) => setRating(newValue)}
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Your Review"
+            fullWidth
+            multiline
+            rows={4}
+            value={review}
+            onChange={(e) => setReview(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleReviewClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleReviewSubmit} color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
