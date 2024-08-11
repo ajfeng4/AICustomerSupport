@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, firestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -10,7 +10,18 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
+    const [showSuccess, setShowSuccess] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('registered') === 'true') {
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 3000);
+        }
+    }, [searchParams]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -61,7 +72,9 @@ export default function LoginPage() {
                         Register
                     </span>
                 </p>
+                {showSuccess && <div style={styles.success}>Registration successful! Please log in.</div>}
             </div>
+
         </div>
     );
 }
@@ -109,6 +122,14 @@ const styles = {
     error: {
         color: 'red',
         marginTop: '10px',
+    },
+    success: {
+        marginBottom: '10px',
+        padding: '10px',
+        fontSize: '14px',
+        color: 'green',
+        backgroundColor: '#e6ffe6',
+        borderRadius: '4px',
     },
     text: {
         marginTop: '20px',

@@ -26,7 +26,8 @@ export default function RegisterPage() {
                 email: user.email
             });
 
-            router.push('/login');
+            // Redirect to login page with a success query parameter
+            router.push('/login?registered=true');
         } catch (error) {
             setError(error.message);
         }
