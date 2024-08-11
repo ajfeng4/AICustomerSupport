@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, firestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -13,6 +13,36 @@ export default function LoginPage() {
     const [error, setError] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const router = useRouter();
+
+    // Suspense boundary wrapping the use of useSearchParams
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginForm
+                email={email}
+                password={password}
+                error={error}
+                showSuccess={showSuccess}
+                setEmail={setEmail}
+                setPassword={setPassword}
+                setError={setError}
+                setShowSuccess={setShowSuccess}
+                router={router}
+            />
+        </Suspense>
+    );
+}
+
+function LoginForm({
+                       email,
+                       password,
+                       error,
+                       showSuccess,
+                       setEmail,
+                       setPassword,
+                       setError,
+                       setShowSuccess,
+                       router
+                   }) {
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -48,7 +78,7 @@ export default function LoginPage() {
     return (
         <div style={styles.container}>
             <div style={styles.formContainer}>
-                <FaRobot style={styles.favicon}/>
+                <FaRobot style={styles.favicon} />
                 <h1 style={styles.title}>Hello! Please Login</h1>
                 <form onSubmit={handleLogin} style={styles.form}>
                     <input
@@ -71,8 +101,8 @@ export default function LoginPage() {
                 <p style={styles.text}>
                     Don&apos;t have an account?{' '}
                     <span style={styles.link} onClick={navigateToRegister}>
-        Register
-    </span>
+                        Register
+                    </span>
                 </p>
                 {showSuccess && <div style={styles.success}>Registration successful! Please log in.</div>}
             </div>
