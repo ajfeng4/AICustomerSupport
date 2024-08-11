@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
@@ -15,6 +15,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [review, setReview] = useState("");
+  const [rating, setRating] = useState(0); // New state for rating
 
   const sendMessage = async () => {
     if (!message.trim()) return; // Don't send empty messages
@@ -91,9 +92,11 @@ export default function Home() {
 
   const handleReviewSubmit = () => {
     console.log("Review submitted:", review);
-    // You can send this review to your backend API here
+    console.log("Rating submitted:", rating);
+    // You can send this review and rating to your backend API here
     setReviewDialogOpen(false);
     setReview(""); // Clear the review input
+    setRating(0);  // Reset the rating
   };
 
   return (
@@ -169,6 +172,11 @@ export default function Home() {
           <DialogContentText>
             Please let us know how your experience was with our support assistant.
           </DialogContentText>
+          <Rating
+            name="rating"
+            value={rating}
+            onChange={(event, newValue) => setRating(newValue)}
+          />
           <TextField
             autoFocus
             margin="dense"
