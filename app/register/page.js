@@ -3,25 +3,21 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const router = useRouter();
 
-    const handleLogin = (e) => {
+    const handleRegister = (e) => {
         e.preventDefault();
-        router.push('/');
-    };
-
-    const navigateToRegister = () => {
-        router.push('/register');
+        router.push('/login');
     };
 
     return (
         <div style={styles.container}>
             <div style={styles.formContainer}>
-                <h1 style={styles.title}>Login</h1>
-                <form onSubmit={handleLogin} style={styles.form}>
+                <h1 style={styles.title}>Register</h1>
+                <form onSubmit={handleRegister} style={styles.form}>
                     <input
                         type="email"
                         placeholder="Email"
@@ -36,12 +32,12 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         style={styles.input}
                     />
-                    <button type="submit" style={styles.button}>Login</button>
+                    <button type="submit" style={styles.button}>Register</button>
                 </form>
                 <p style={styles.text}>
-                    Don't have an account?{' '}
-                    <span style={styles.link} onClick={navigateToRegister}>
-                        Register
+                    Already have an account?{' '}
+                    <span style={styles.link} onClick={() => router.push('/login')}>
+                        Login
                     </span>
                 </p>
             </div>
