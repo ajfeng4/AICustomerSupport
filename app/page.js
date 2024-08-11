@@ -33,14 +33,14 @@ export default function Home() {
         },
         body: JSON.stringify([...messages, { role: "user", content: message }]),
       });
-
+    
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-
+    
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-
+    
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -55,16 +55,13 @@ export default function Home() {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching API:", error);
       setMessages((messages) => [
         ...messages,
-        {
-          role: "assistant",
-          content:
-            "I'm sorry, but I encountered an error. Please try again later.",
-        },
+        { role: "assistant", content: "I'm sorry, but I encountered an error. Please try again later." },
       ]);
     }
+    
     setIsLoading(false);
     const handleKeyPress = (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
