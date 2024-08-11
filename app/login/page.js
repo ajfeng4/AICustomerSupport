@@ -48,7 +48,7 @@ export default function LoginPage() {
     return (
         <div style={styles.container}>
             <div style={styles.formContainer}>
-                <FaRobot style={styles.favicon} />
+                <FaRobot style={styles.favicon}/>
                 <h1 style={styles.title}>Hello! Please Login</h1>
                 <form onSubmit={handleLogin} style={styles.form}>
                     <input
@@ -69,10 +69,10 @@ export default function LoginPage() {
                 </form>
                 {error && <p style={styles.error}>{error}</p>}
                 <p style={styles.text}>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <span style={styles.link} onClick={navigateToRegister}>
-                        Register
-                    </span>
+        Register
+    </span>
                 </p>
                 {showSuccess && <div style={styles.success}>Registration successful! Please log in.</div>}
             </div>
