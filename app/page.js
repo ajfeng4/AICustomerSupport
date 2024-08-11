@@ -2,7 +2,6 @@
 
 import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
-import { translateText } from './translate';
 import { auth, firestore } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import * as React from 'react';
@@ -12,8 +11,7 @@ export default function Home() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content:
-          "Hi! I'm the Headstarter support assistant. How can I help you today?",
+      content: "Hi! I'm your personal support assistant. How may I be of assistance, today?",
     },
   ]);
   const [message, setMessage] = useState("");
@@ -24,6 +22,15 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [lastInteraction, setLastInteraction] = useState({ userMessage: "", botResponse: "" });
   const messagesEndRef = useRef(null);
+
+  const botResponses = [
+    "New York City is made up of five boroughs: Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.",
+    "Manhattan is known for landmarks like Central Park, Times Square, and the Empire State Building.",
+    "Brooklyn is famous for its cultural diversity, the Brooklyn Bridge, and Coney Island.",
+    "Queens is the most ethnically diverse urban area in the world, and home to Flushing Meadows and Citi Field.",
+    "The Bronx is where you’ll find Yankee Stadium and the Bronx Zoo, one of the largest metropolitan zoos in the world.",
+    "Staten Island is known for its suburban feel and the Staten Island Ferry, which offers views of the Statue of Liberty."
+  ];
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -44,62 +51,25 @@ export default function Home() {
     const newMessages = [...messages, { role: "user", content: message }];
 
     setMessage("");
+    setMessages(newMessages);
+
+    const botResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
+
     setMessages((messages) => [
       ...messages,
-      { role: "user", content: message },
-      { role: "assistant", content: "" },
+      { role: "assistant", content: botResponse },
     ]);
 
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify([...newMessages]),
+    setLastInteraction({ userMessage: message, botResponse });
+
+    if (user) {
+      const userDocRef = doc(firestore, "users", user.uid);
+      await updateDoc(userDocRef, {
+        chatHistory: arrayUnion({
+          userMessage: message,
+          botResponse,
+        }),
       });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let botResponse = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value, { stream: true });
-        botResponse += text;
-        setMessages((messages) => {
-          let lastMessage = messages[messages.length - 1];
-          let otherMessages = messages.slice(0, messages.length - 1);
-          return [
-            ...otherMessages,
-            { ...lastMessage, content: lastMessage.content + text },
-          ];
-        });
-      }
-
-      setLastInteraction({ userMessage: message, botResponse });
-
-      if (user) {
-        const userDocRef = doc(firestore, "users", user.uid);
-        await updateDoc(userDocRef, {
-          chatHistory: arrayUnion({
-            userMessage: message,
-            botResponse,
-          }),
-        });
-      }
-
-    } catch (error) {
-      console.error("Error fetching API:", error);
-      setMessages((messages) => [
-        ...messages,
-        { role: "assistant", content: "I'm sorry, but I encountered an error. Please try again later." },
-      ]);
     }
 
     setIsLoading(false);
