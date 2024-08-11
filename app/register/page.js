@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth, firestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { FaRobot } from 'react-icons/fa';
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
@@ -36,7 +37,8 @@ export default function RegisterPage() {
     return (
         <div style={styles.container}>
             <div style={styles.formContainer}>
-                <h1 style={styles.title}>Register</h1>
+                <FaRobot style={styles.favicon} />
+                <h1 style={styles.title}>Please register to chat!</h1>
                 <form onSubmit={handleRegister} style={styles.form}>
                     <input
                         type="text"
@@ -79,39 +81,49 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#e8f5e9',
     },
     formContainer: {
         backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        width: '300px',
+        padding: '30px',
+        borderRadius: '10px',
+        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
+        width: '320px',
         textAlign: 'center',
+    },
+    favicon: {
+        fontSize: '40px',
+        color: '#4caf50',
+        marginBottom: '10px',
     },
     title: {
         marginBottom: '20px',
-        fontSize: '24px',
+        fontSize: '28px',
+        color: '#4caf50',
+        fontWeight: 'bold',
     },
     form: {
         display: 'flex',
         flexDirection: 'column',
     },
     input: {
-        marginBottom: '10px',
-        padding: '10px',
+        marginBottom: '15px',
+        padding: '12px',
         fontSize: '16px',
-        borderRadius: '4px',
+        borderRadius: '6px',
         border: '1px solid #ccc',
+        outline: 'none',
+        transition: 'border-color 0.3s',
     },
     button: {
-        padding: '10px',
+        padding: '12px',
         fontSize: '16px',
-        backgroundColor: '#007bff',
+        backgroundColor: '#4caf50',
         color: 'white',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '6px',
         cursor: 'pointer',
+        transition: 'background-color 0.3s',
     },
     error: {
         color: 'red',
@@ -120,9 +132,10 @@ const styles = {
     text: {
         marginTop: '20px',
         fontSize: '14px',
+        color: '#4caf50',
     },
     link: {
-        color: '#007bff',
+        color: '#388e3c',
         cursor: 'pointer',
         textDecoration: 'underline',
     },

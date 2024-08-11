@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, firestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { FaRobot } from 'react-icons/fa';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -47,7 +48,8 @@ export default function LoginPage() {
     return (
         <div style={styles.container}>
             <div style={styles.formContainer}>
-                <h1 style={styles.title}>Login</h1>
+                <FaRobot style={styles.favicon} />
+                <h1 style={styles.title}>Hello! Please Login</h1>
                 <form onSubmit={handleLogin} style={styles.form}>
                     <input
                         type="email"
@@ -74,7 +76,6 @@ export default function LoginPage() {
                 </p>
                 {showSuccess && <div style={styles.success}>Registration successful! Please log in.</div>}
             </div>
-
         </div>
     );
 }
@@ -85,58 +86,75 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#e8f5e9', // Light green background
     },
     formContainer: {
         backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        width: '300px',
+        padding: '30px',
+        borderRadius: '10px',
+        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
+        width: '320px',
         textAlign: 'center',
+    },
+    favicon: {
+        fontSize: '40px',
+        color: '#4caf50',
+        marginBottom: '10px',
     },
     title: {
         marginBottom: '20px',
-        fontSize: '24px',
+        fontSize: '28px',
+        color: '#4caf50',
+        fontWeight: 'bold',
     },
     form: {
         display: 'flex',
         flexDirection: 'column',
     },
     input: {
-        marginBottom: '10px',
-        padding: '10px',
+        marginBottom: '15px',
+        padding: '12px',
         fontSize: '16px',
-        borderRadius: '4px',
+        borderRadius: '6px',
         border: '1px solid #ccc',
+        outline: 'none',
+        transition: 'border-color 0.3s',
+    },
+    inputFocused: {
+        borderColor: '#4caf50',
     },
     button: {
-        padding: '10px',
+        padding: '12px',
         fontSize: '16px',
-        backgroundColor: '#007bff',
+        backgroundColor: '#4caf50',
         color: 'white',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '6px',
         cursor: 'pointer',
+        transition: 'background-color 0.3s',
+    },
+    buttonHovered: {
+        backgroundColor: '#388e3c',
     },
     error: {
         color: 'red',
         marginTop: '10px',
     },
     success: {
-        marginBottom: '10px',
+        marginTop: '10px',
         padding: '10px',
         fontSize: '14px',
-        color: 'green',
-        backgroundColor: '#e6ffe6',
+        color: 'white',
+        backgroundColor: '#66bb6a',
         borderRadius: '4px',
     },
     text: {
         marginTop: '20px',
         fontSize: '14px',
+        color: '#4caf50',
     },
     link: {
-        color: '#007bff',
+        color: '#388e3c',
         cursor: 'pointer',
         textDecoration: 'underline',
     },

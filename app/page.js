@@ -6,6 +6,7 @@ import { translateText } from './translate';
 import { auth, firestore } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import * as React from 'react';
+import { FaRobot } from 'react-icons/fa';
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -21,7 +22,7 @@ export default function Home() {
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(0);
   const [user, setUser] = useState(null);
-  const [lastInteraction, setLastInteraction] = useState({ userMessage: "", botResponse: "" }); // Store the last interaction
+  const [lastInteraction, setLastInteraction] = useState({ userMessage: "", botResponse: "" });
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function Home() {
   }, []);
 
   const sendMessage = async () => {
-    if (!message.trim()) return; // Don't send empty messages
+    if (!message.trim()) return;
     setIsLoading(true);
 
     const newMessages = [...messages, { role: "user", content: message }];
@@ -82,7 +83,7 @@ export default function Home() {
       }
 
       setLastInteraction({ userMessage: message, botResponse });
-      
+
       if (user) {
         const userDocRef = doc(firestore, "users", user.uid);
         await updateDoc(userDocRef, {
@@ -102,7 +103,7 @@ export default function Home() {
     }
 
     setIsLoading(false);
-    setReviewDialogOpen(true); // Open the review popup after session ends
+    setReviewDialogOpen(true);
   };
 
   const handleKeyPress = (event) => {
@@ -125,9 +126,6 @@ export default function Home() {
   };
 
   const handleReviewSubmit = async () => {
-    console.log("Review submitted:", review);
-    console.log("Rating submitted:", rating);
-
     if (user) {
       const userDocRef = doc(firestore, "users", user.uid);
       await updateDoc(userDocRef, {
@@ -141,8 +139,8 @@ export default function Home() {
     }
 
     setReviewDialogOpen(false);
-    setReview(""); // Clear the review input
-    setRating(0);  // Reset the rating
+    setReview("");
+    setRating(0);
   };
 
   const [outputLang, setOutputLang] = React.useState('en');
@@ -154,14 +152,12 @@ export default function Home() {
     const latestAssistantMessage = messages.filter(message => message.role === "assistant").pop();
 
     if (latestAssistantMessage) {
-      // Get translation based on input text and output language and set the output text field
       const translatedText = await translateText(latestAssistantMessage.content, outputLang);
       setMessages((messages) => [
         ...messages,
         { role: "assistant", content: translatedText },
       ]);
 
-      // Update chat history with the translated message
       if (user) {
         const userDocRef = doc(firestore, "users", user.uid);
         await updateDoc(userDocRef, {
@@ -176,19 +172,20 @@ export default function Home() {
 
   return (
       <Box
-          width="100vw"
-          height="100vh"
           display="flex"
-          flexDirection="column"
           justifyContent="center"
           alignItems="center"
+          height="100vh"
+          bgcolor="#e8f5e9"
       >
         <Stack
             direction={"column"}
             width="500px"
             height="700px"
-            border="1px solid black"
-            p={2}
+            bgcolor="white"
+            borderRadius="10px"
+            boxShadow="0 8px 16px rgba(0, 0, 0, 0.1)"
+            p={3}
             spacing={3}
         >
           <Stack
@@ -197,6 +194,9 @@ export default function Home() {
               flexGrow={1}
               overflow="auto"
               maxHeight="100%"
+              borderRadius="6px"
+              border="1px solid #ccc"
+              p={2}
           >
             {messages.map((message, index) => (
                 <Box
@@ -209,12 +209,12 @@ export default function Home() {
                   <Box
                       bgcolor={
                         message.role === "assistant"
-                            ? "primary.main"
-                            : "secondary.main"
+                            ? "#4caf50"
+                            : "#388e3c"
                       }
                       color="white"
                       borderRadius={16}
-                      p={3}
+                      p={2}
                   >
                     {message.content}
                   </Box>
@@ -235,6 +235,7 @@ export default function Home() {
                 variant="contained"
                 onClick={sendMessage}
                 disabled={isLoading}
+                style={styles.button}
             >
               {isLoading ? "Sending..." : "Send"}
             </Button>
@@ -255,7 +256,7 @@ export default function Home() {
                 <MenuItem value={"ru"}>Russian</MenuItem>
               </Select>
             </FormControl>
-            <Button variant="contained" onClick={handleTranslate}>Translate</Button>
+            <Button variant="contained" onClick={handleTranslate} style={styles.button}>Translate</Button>
           </Stack>
         </Stack>
 
@@ -293,3 +294,22 @@ export default function Home() {
       </Box>
   );
 }
+
+const styles = {
+  favicon: {
+    fontSize: '40px',
+    color: '#4caf50',
+    alignSelf: 'center',
+    marginBottom: '20px',
+  },
+  button: {
+    backgroundColor: '#4caf50',
+    color: 'white',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+    "&:hover": {
+      backgroundColor: '#388e3c',
+    },
+  },
+};
