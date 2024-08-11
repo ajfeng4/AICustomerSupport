@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Stack, TextField } from "@mui/material";
+import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
@@ -8,11 +8,14 @@ export default function Home() {
     {
       role: "assistant",
       content:
-        "Hi! I'm the Headstarter support assistant. How can I help you today?",
+          "Hi! I'm the Headstarter support assistant. How can I help you today?",
     },
   ]);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [review, setReview] = useState("");
+  const [rating, setRating] = useState(0); // New state for rating
 
   const sendMessage = async () => {
     if (!message.trim()) return; // Don't send empty messages
@@ -55,23 +58,15 @@ export default function Home() {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching API:", error);
       setMessages((messages) => [
         ...messages,
-        {
-          role: "assistant",
-          content:
-            "I'm sorry, but I encountered an error. Please try again later.",
-        },
+        { role: "assistant", content: "I'm sorry, but I encountered an error. Please try again later." },
       ]);
     }
+
     setIsLoading(false);
-    const handleKeyPress = (event) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-      }
-    };
+    setReviewDialogOpen(true); // Open the review popup after session ends
   };
 
   const handleKeyPress = (event) => {
@@ -91,72 +86,117 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
+  const handleReviewClose = () => {
+    setReviewDialogOpen(false);
+  };
+
+  const handleReviewSubmit = () => {
+    console.log("Review submitted:", review);
+    console.log("Rating submitted:", rating);
+    // You can send this review and rating to your backend API here
+    setReviewDialogOpen(false);
+    setReview(""); // Clear the review input
+    setRating(0);  // Reset the rating
+  };
+
   return (
-    <Box
-      width="100vw"
-      height="100vh"
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Stack
-        direction={"column"}
-        width="500px"
-        height="700px"
-        border="1px solid black"
-        p={2}
-        spacing={3}
+      <Box
+          width="100vw"
+          height="100vh"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
       >
         <Stack
-          direction={"column"}
-          spacing={2}
-          flexGrow={1}
-          overflow="auto"
-          maxHeight="100%"
+            direction={"column"}
+            width="500px"
+            height="700px"
+            border="1px solid black"
+            p={2}
+            spacing={3}
         >
-          {messages.map((message, index) => (
-            <Box
-              key={index}
-              display="flex"
-              justifyContent={
-                message.role === "assistant" ? "flex-start" : "flex-end"
-              }
-            >
-              <Box
-                bgcolor={
-                  message.role === "assistant"
-                    ? "primary.main"
-                    : "secondary.main"
-                }
-                color="white"
-                borderRadius={16}
-                p={3}
-              >
-                {message.content}
-              </Box>
-            </Box>
-          ))}
-          <div ref={messagesEndRef} />
-        </Stack>
-        <Stack direction={"row"} spacing={2}>
-          <TextField
-            label="Message"
-            fullWidth
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isLoading}
-          />
-          <Button
-            variant="contained"
-            onClick={sendMessage}
-            disabled={isLoading}
+          <Stack
+              direction={"column"}
+              spacing={2}
+              flexGrow={1}
+              overflow="auto"
+              maxHeight="100%"
           >
-            {isLoading ? "Sending..." : "Send"}
-          </Button>
+            {messages.map((message, index) => (
+                <Box
+                    key={index}
+                    display="flex"
+                    justifyContent={
+                      message.role === "assistant" ? "flex-start" : "flex-end"
+                    }
+                >
+                  <Box
+                      bgcolor={
+                        message.role === "assistant"
+                            ? "primary.main"
+                            : "secondary.main"
+                      }
+                      color="white"
+                      borderRadius={16}
+                      p={3}
+                  >
+                    {message.content}
+                  </Box>
+                </Box>
+            ))}
+            <div ref={messagesEndRef} />
+          </Stack>
+          <Stack direction={"row"} spacing={2}>
+            <TextField
+                label="Message"
+                fullWidth
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={isLoading}
+            />
+            <Button
+                variant="contained"
+                onClick={sendMessage}
+                disabled={isLoading}
+            >
+              {isLoading ? "Sending..." : "Send"}
+            </Button>
+          </Stack>
         </Stack>
-      </Stack>
-    </Box>
+
+        <Dialog open={reviewDialogOpen} onClose={handleReviewClose}>
+          <DialogTitle>Review Your Experience</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please let us know how your experience was with our support assistant.
+            </DialogContentText>
+            <Rating
+                name="rating"
+                value={rating}
+                onChange={(event, newValue) => setRating(newValue)}
+            />
+            <TextField
+                autoFocus
+                margin="dense"
+                label="Your Review"
+                fullWidth
+                multiline
+                rows={4}
+                value={review}
+                onChange={(e) => setReview(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleReviewClose} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleReviewSubmit} color="primary">
+              Submit
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
   );
 }
