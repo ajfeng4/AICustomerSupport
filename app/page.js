@@ -8,29 +8,29 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
 
-  const [outputLang, setOutputLang] = React.useState('en')
+  const [outputLang, setOutputLang] = React.useState('en');
   const outputLangChange = (event) => {
     setOutputLang(event.target.value);
-  }
+  };
 
-  // Replace 'YOUR_PROJECT_ID' with your project ID, referencing .env file
-  const projectId = 'YOUR_PROJECT_ID';
-
-  // Imports the Google Cloud client library
-  const {Translate} = require('@google-cloud/translate').v2;
-
-  // Creates a client
-  const translate = new Translate();
+  // Replace 'YOUR_API_KEY' with your actual API key, referencing .env file
+  const apiKey = process.env.REACT_APP_API_KEY;
 
   async function translateText() {
-    // Translates the text into the target language.
-    let [translations] = await translate.translate(inputText, outputLang);
-    translations = Array.isArray(translations) ? translations : [translations];
-    console.log('Translations:');
-    translations.forEach((translation, i) => {
-      console.log(`${text[i]} => (${outputLang}) ${translation}`);
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${"apikeyhere"}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: inputText,
+        target: outputLang,
+      }),
     });
-    // Set the translated text to outputText
+    const data = await response.json();
+    const translations = data.data.translations.map(translation => translation.translatedText);
+    console.log('Translations:', translations);
     setOutputText(translations.join('\n'));
   }
 
