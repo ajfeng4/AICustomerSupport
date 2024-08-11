@@ -3,7 +3,7 @@
 import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import { translateText } from './translate';
-import { auth, firestore } from '@/firebase'
+import { auth, firestore } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import * as React from 'react';
 
@@ -21,8 +21,8 @@ export default function Home() {
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(0);
   const [user, setUser] = useState(null);
+  const [lastInteraction, setLastInteraction] = useState({ userMessage: "", botResponse: "" }); // Store the last interaction
   const messagesEndRef = useRef(null);
-
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -64,11 +64,13 @@ export default function Home() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let botResponse = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const text = decoder.decode(value, { stream: true });
+        botResponse += text;
         setMessages((messages) => {
           let lastMessage = messages[messages.length - 1];
           let otherMessages = messages.slice(0, messages.length - 1);
@@ -79,10 +81,15 @@ export default function Home() {
         });
       }
 
+      setLastInteraction({ userMessage: message, botResponse });
+      
       if (user) {
         const userDocRef = doc(firestore, "users", user.uid);
         await updateDoc(userDocRef, {
-          chatHistory: arrayUnion({ role: "user", content: message }),
+          chatHistory: arrayUnion({
+            userMessage: message,
+            botResponse,
+          }),
         });
       }
 
@@ -124,7 +131,12 @@ export default function Home() {
     if (user) {
       const userDocRef = doc(firestore, "users", user.uid);
       await updateDoc(userDocRef, {
-        chatHistory: arrayUnion({ role: "assistant", content: "Review submitted", review, rating }),
+        chatHistory: arrayUnion({
+          userMessage: lastInteraction.userMessage,
+          botResponse: lastInteraction.botResponse,
+          review,
+          rating,
+        }),
       });
     }
 
