@@ -3,7 +3,9 @@
 import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import { translateText } from './translate';
-import * as React from 'react'
+import { auth, firestore } from '@/firebase'
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import * as React from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -17,11 +19,28 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [review, setReview] = useState("");
-  const [rating, setRating] = useState(0); // New state for rating
+  const [rating, setRating] = useState(0);
+  const [user, setUser] = useState(null);
+  const messagesEndRef = useRef(null);
+
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const sendMessage = async () => {
     if (!message.trim()) return; // Don't send empty messages
     setIsLoading(true);
+
+    const newMessages = [...messages, { role: "user", content: message }];
 
     setMessage("");
     setMessages((messages) => [
@@ -36,7 +55,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([...messages, { role: "user", content: message }]),
+        body: JSON.stringify([...newMessages]),
       });
 
       if (!response.ok) {
@@ -59,6 +78,14 @@ export default function Home() {
           ];
         });
       }
+
+      if (user) {
+        const userDocRef = doc(firestore, "users", user.uid);
+        await updateDoc(userDocRef, {
+          chatHistory: arrayUnion({ role: "user", content: message }),
+        });
+      }
+
     } catch (error) {
       console.error("Error fetching API:", error);
       setMessages((messages) => [
@@ -78,8 +105,6 @@ export default function Home() {
     }
   };
 
-  const messagesEndRef = useRef(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -92,10 +117,17 @@ export default function Home() {
     setReviewDialogOpen(false);
   };
 
-  const handleReviewSubmit = () => {
+  const handleReviewSubmit = async () => {
     console.log("Review submitted:", review);
     console.log("Rating submitted:", rating);
-    // You can send this review and rating to your backend API here
+
+    if (user) {
+      const userDocRef = doc(firestore, "users", user.uid);
+      await updateDoc(userDocRef, {
+        chatHistory: arrayUnion({ role: "assistant", content: "Review submitted", review, rating }),
+      });
+    }
+
     setReviewDialogOpen(false);
     setReview(""); // Clear the review input
     setRating(0);  // Reset the rating
@@ -107,8 +139,7 @@ export default function Home() {
   };
 
   const handleTranslate = async () => {
-    // Get the latest assistant message
-    const latestAssistantMessage = messages.filter(message => message.role === "assistant");
+    const latestAssistantMessage = messages.filter(message => message.role === "assistant").pop();
 
     if (latestAssistantMessage) {
       // Get translation based on input text and output language and set the output text field
@@ -117,6 +148,15 @@ export default function Home() {
         ...messages,
         { role: "assistant", content: translatedText },
       ]);
+
+      // Update chat history with the translated message
+      if (user) {
+        const userDocRef = doc(firestore, "users", user.uid);
+        await updateDoc(userDocRef, {
+          chatHistory: arrayUnion({ role: "assistant", content: translatedText }),
+        });
+      }
+
     } else {
       console.log("No assistant messages found.");
     }
@@ -191,11 +231,11 @@ export default function Home() {
             <FormControl fullWidth>
               <InputLabel id="outputLang-label">Output Language</InputLabel>
               <Select
-                labelId="outputLang-label"
-                id="outputLang"
-                value={outputLang}
-                label="Output Language"
-                onChange={outputLangChange}
+                  labelId="outputLang-label"
+                  id="outputLang"
+                  value={outputLang}
+                  label="Output Language"
+                  onChange={outputLangChange}
               >
                 <MenuItem value={"en"}>English</MenuItem>
                 <MenuItem value={"es"}>Spanish</MenuItem>
