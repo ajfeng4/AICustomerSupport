@@ -6,7 +6,7 @@ import { translateText } from './translate';
 import { auth, firestore } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import * as React from 'react';
-import { FaRobot } from 'react-icons/fa';
+import { FaRobot, FaUser } from 'react-icons/fa';
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -202,10 +202,14 @@ export default function Home() {
                 <Box
                     key={index}
                     display="flex"
+                    alignItems="center"
                     justifyContent={
                       message.role === "assistant" ? "flex-start" : "flex-end"
                     }
                 >
+                  {message.role === "assistant" && (
+                      <FaRobot style={styles.icon} />
+                  )}
                   <Box
                       bgcolor={
                         message.role === "assistant"
@@ -215,9 +219,15 @@ export default function Home() {
                       color="white"
                       borderRadius={16}
                       p={2}
+                      ml={message.role === "assistant" ? 2 : 0}
+                      mr={message.role === "user" ? 2 : 0}
+                      maxWidth="80%"
                   >
                     {message.content}
                   </Box>
+                  {message.role === "user" && (
+                      <FaUser style={styles.icon} />
+                  )}
                 </Box>
             ))}
             <div ref={messagesEndRef} />
@@ -296,11 +306,9 @@ export default function Home() {
 }
 
 const styles = {
-  favicon: {
-    fontSize: '40px',
+  icon: {
+    fontSize: '24px',
     color: '#4caf50',
-    alignSelf: 'center',
-    marginBottom: '20px',
   },
   button: {
     backgroundColor: '#4caf50',
