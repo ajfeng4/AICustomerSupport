@@ -1,7 +1,9 @@
 "use client";
 
-import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating } from "@mui/material";
+import { Box, Button, Stack, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Rating, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
+import { translateText } from './translate';
+import * as React from 'react'
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -99,6 +101,27 @@ export default function Home() {
     setRating(0);  // Reset the rating
   };
 
+  const [outputLang, setOutputLang] = React.useState('en');
+  const outputLangChange = (event) => {
+    setOutputLang(event.target.value);
+  };
+
+  const handleTranslate = async () => {
+    // Get the latest assistant message
+    const latestAssistantMessage = messages.filter(message => message.role === "assistant");
+
+    if (latestAssistantMessage) {
+      // Get translation based on input text and output language and set the output text field
+      const translatedText = await translateText(latestAssistantMessage.content, outputLang);
+      setMessages((messages) => [
+        ...messages,
+        { role: "assistant", content: translatedText },
+      ]);
+    } else {
+      console.log("No assistant messages found.");
+    }
+  };
+
   return (
       <Box
           width="100vw"
@@ -163,6 +186,24 @@ export default function Home() {
             >
               {isLoading ? "Sending..." : "Send"}
             </Button>
+          </Stack>
+          <Stack direction={"row"} spacing={2}>
+            <FormControl fullWidth>
+              <InputLabel id="outputLang-label">Output Language</InputLabel>
+              <Select
+                labelId="outputLang-label"
+                id="outputLang"
+                value={outputLang}
+                label="Output Language"
+                onChange={outputLangChange}
+              >
+                <MenuItem value={"en"}>English</MenuItem>
+                <MenuItem value={"es"}>Spanish</MenuItem>
+                <MenuItem value={"zh"}>Chinese</MenuItem>
+                <MenuItem value={"ru"}>Russian</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="contained" onClick={handleTranslate}>Translate</Button>
           </Stack>
         </Stack>
 
