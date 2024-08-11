@@ -2,15 +2,31 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth, firestore } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
     const router = useRouter();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        router.push('/');
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const userDoc = await getDoc(doc(firestore, "users", user.uid));
+            if (userDoc.exists()) {
+                router.push('/');
+            } else {
+                setError('User does not exist in our records.');
+                await auth.signOut();
+            }
+        } catch (error) {
+            setError('Invalid email or password.');
+        }
     };
 
     const navigateToRegister = () => {
@@ -38,6 +54,7 @@ export default function LoginPage() {
                     />
                     <button type="submit" style={styles.button}>Login</button>
                 </form>
+                {error && <p style={styles.error}>{error}</p>}
                 <p style={styles.text}>
                     Don't have an account?{' '}
                     <span style={styles.link} onClick={navigateToRegister}>
@@ -88,6 +105,10 @@ const styles = {
         border: 'none',
         borderRadius: '4px',
         cursor: 'pointer',
+    },
+    error: {
+        color: 'red',
+        marginTop: '10px',
     },
     text: {
         marginTop: '20px',

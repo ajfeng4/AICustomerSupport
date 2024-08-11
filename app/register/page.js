@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, firestore } from '../../firebase';
+import { auth, firestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -25,7 +25,7 @@ export default function RegisterPage() {
                 username: username,
                 email: user.email
             });
-            
+
             router.push('/login');
         } catch (error) {
             setError(error.message);
